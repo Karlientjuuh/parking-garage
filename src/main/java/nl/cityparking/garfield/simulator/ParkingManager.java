@@ -13,22 +13,63 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 
+/**
+ * The ParkingManager is the representation of the 'physical' garage itself. It defines the floors it has, the lots
+ * that each floor has and the amount of spaces each lot has. It is primarily responsible for managing and tracking
+ * the state of the garage.
+ *
+ * Many queries can be performed upon the ParkingManager, such as which Agents are leaving the garage, or which cars
+ * are parked invalidly. The ParkingManager also manages the influx of cars, assigning them to a spot.
+ *
+ * @author Jesse
+ * @since 1.0
+ */
 public class ParkingManager {
 	private ArrayList<ParkingFloor> floors = new ArrayList<>();
 
 	private ForkJoinPool pool = ForkJoinPool.commonPool();
 	private boolean useThreading = false;
 
-	public void addFloor(int lots, int lotSize) {
-		floors.add(new ParkingFloor(lots, lotSize));
+	/**
+	 * Adds a floor to the parking garage. Leaving lots and lotSize zero will add an empty floor can be configured as
+	 * desired.
+	 *
+	 * @param lots The amount of parking lots on the floor.
+	 * @param lotSize The size of each lot on the floor.
+	 * @return The added ParkingFloor.
+	 */
+	public ParkingFloor addFloor(int lots, int lotSize) {
+		ParkingFloor floor = new ParkingFloor(lots, lotSize);
+		floors.add(floor);
+		return floor;
 	}
 
-	public void addFloors(int count, int lots, int lotSize) {
+	/**
+	 * Adds multiple new floors to the parking garage. Leaving lots and lotSize zero will add empty floors that can be
+	 * configured as desired.
+	 *
+	 * @param count The amount of floors to add.
+	 * @param lots The amount of lots to add to each floor.
+	 * @param lotSize The size of each lot to add to the floor.
+	 * @return A collection of the added floors.
+	 */
+	public Collection<ParkingFloor> addFloors(int count, int lots, int lotSize) {
+		ArrayList<ParkingFloor> newFloors = new ArrayList<>();
+
 		for (int i = 0; i < count; i++) {
-			floors.add(new ParkingFloor(lots, lotSize));
+			newFloors.add(new ParkingFloor(lots, lotSize));
 		}
+
+		floors.addAll(newFloors);
+		return newFloors;
 	}
 
+	/**
+	 * Processes the arrival of a single agent. This method will fail if all spots are occupied.
+	 *
+	 * @param arrival The Arrival to process.
+	 * @return true if the Arrival was processed succesfully, false if it failed.
+	 */
 	public boolean handleArrival(Arrival arrival) {
 		for (ParkingFloor floor: floors) {
 			if (floor.getFreeSpots() > 0) {
@@ -40,7 +81,16 @@ public class ParkingManager {
 		return false;
 	}
 
-	public List<Agent> getLeavingAgents(long currentTime) {
+	/**
+	 * Returns a collection of Agents that are leaving the parking garage. The returned list must be processed further
+	 * by the exit queues of the simulator.
+	 *
+	 * This method will free up the spaces the leaving agents occupied, making them available to new arrivals.
+	 *
+	 * @param currentTime The current time in simulator minutes.
+	 * @return A collection of Agents that have left their parking spaces.
+	 */
+	public Collection<Agent> getLeavingAgents(long currentTime) {
 		if (useThreading) {
 			return pool.invoke(new FindLeaversTask(floors, currentTime));
 		}
@@ -64,25 +114,52 @@ public class ParkingManager {
 		return leavingAgents;
 	}
 
-	public ArrayList<ParkingFloor> getFloors() {
+	/**
+	 * Retrieves all floors in the ParkingGarage.
+	 * @return A Collection of ParkingFloors.
+	 */
+	public Collection<ParkingFloor> getFloors() {
 		return floors;
 	}
 
-	public void useThreading(boolean threading) {
+	/**
+	 * Enables or disables the use of DNC based, task-stealing threading in the operations of the simulator. Note that
+	 * threading is always used, and this only disables or enables the use of divide-and-conquer, task stealing based
+	 * concurrency.
+	 *
+	 * @param threading true to enable DNC, task-stealing concurrency; false to disable it
+	 */
+	public void setThreading(boolean threading) {
 		useThreading = true;
 	}
 
-	private static class FindLeaversTask extends RecursiveTask<List<Agent>> {
-		private ArrayList<ParkingFloor> floors;
+	/**
+	 * FindLeaversTask is a work dividing task, that creates WorkerTasks for each parking lot on every single floor.
+	 *
+	 * @author Jesse
+	 * @since 1.0
+	 * @see WorkerTask
+	 */
+	private static class FindLeaversTask extends RecursiveTask<Collection<Agent>> {
+		private Collection<ParkingFloor> floors;
 		private long currentTime;
 
-		public FindLeaversTask(ArrayList<ParkingFloor> floors, long currentTime) {
+		/**
+		 * Creates an instance of FindLeaversTask
+		 * @param floors A Collection of ParkingFloors to operate on.
+		 * @param currentTime The current time in simulator minutes.
+		 */
+		public FindLeaversTask(Collection<ParkingFloor> floors, long currentTime) {
 			this.floors = floors;
 			this.currentTime = currentTime;
 		}
 
+		/**
+		 * Divides the work in tasks and then returns the
+		 * @return
+		 */
 		@Override
-		protected List<Agent> compute() {
+		protected Collection<Agent> compute() {
 			ArrayList<WorkerTask> workerTasks = new ArrayList<>();
 
 			// Create a task for each lot!
@@ -102,17 +179,32 @@ public class ParkingManager {
 					.collect(Collectors.toList());
 		}
 
-		private static class WorkerTask extends RecursiveTask<List<Agent>> {
-			private final static int THRESHOLD = 400;
-
+		/**
+		 * WorkerTask processes a ParkingLot, collects all leaving agents, frees up their ParkingSpaces and then
+		 * returns a collection of the departing Agents.
+		 *
+		 * @author Jesse
+		 * @since 1.0
+		 */
+		private static class WorkerTask extends RecursiveTask<Collection<Agent>> {
 			private ParkingLot parkingLot;
 			private long currentTime;
 
+			/**
+			 * Initializes an instance of WorkerTask.
+			 *
+			 * @param parkingLot The ParkingLot to process.
+			 * @param currentTime The current time in simulation minutes.
+			 */
 			public WorkerTask(ParkingLot parkingLot, long currentTime) {
 				this.parkingLot = parkingLot;
 				this.currentTime = currentTime;
 			}
 
+			/**
+			 * Collects all departing Agents, frees their spaces and returns the Collection of departing Agents.
+			 * @return Collection of departing Agents.
+			 */
 			@Override
 			protected List<Agent> compute() {
 				return parkingLot.getSpaces().stream()

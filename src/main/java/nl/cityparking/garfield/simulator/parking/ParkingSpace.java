@@ -2,6 +2,12 @@ package nl.cityparking.garfield.simulator.parking;
 
 import nl.cityparking.garfield.simulator.agent.Agent;
 
+/**
+ * Abstraction of a parking space in the garage.
+ *
+ * @author Jesse
+ * @since 1.0
+ */
 public class ParkingSpace {
 	private Agent occupant = null;
 	private long occupiedUntil = -1;

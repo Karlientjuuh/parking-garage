@@ -4,16 +4,33 @@ import nl.cityparking.garfield.simulator.Arrival;
 import nl.cityparking.garfield.simulator.agent.Agent;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.TreeSet;
 
+/**
+ * An abstraction of a physical parking lot. A ParkingLot consists of multiple ParkingSpaces.
+ *
+ * @author Jesse
+ * @since 1.0
+ */
 public class ParkingLot {
 	private ArrayList<ParkingSpace> spaces = new ArrayList<>();
 	private TreeSet<Integer> freeSpaces = new TreeSet<>();
 
 	private int rows = 2;
 
+	/**
+	 * Initializes a new ParkingLot. Supply zero to the spaces argument creates a lot with no spaces.
+	 *
+	 * @param spaces The amount of spaces to create. Spaces must be divisable by two
+	 */
 	public ParkingLot(int spaces) {
-		assert (spaces % 2 == 0);
+		this(spaces, 2);
+	}
+
+	public ParkingLot(int spaces, int rows) {
+		this.rows = rows;
+		assert (spaces % rows == 0);
 		resize(spaces);
 	}
 
@@ -77,38 +94,78 @@ public class ParkingLot {
 		return -1;
 	}
 
-	public void parkArrival(Arrival arrival) {
+	/**
+	 * Processes an arrival and parks it into this spot.
+	 * @param arrival The Arrival to park.
+	 */
+	public synchronized void parkArrival(Arrival arrival) {
 		int index = popFirstFreeSpaceIndex();
 		spaces.get(index).setOccupant(arrival.agent, arrival.departureMinute);
 	}
 
+	/**
+	 * Frees the given space, registering it as available for parking.
+	 * @param space The ParkingSpace to free up.
+	 * @return The Agent that occupied the ParkingSpace.
+	 */
 	public synchronized Agent freeSpace(ParkingSpace space) {
 		int index = spaces.indexOf(space);
 		freeSpaces.add(index);
 		return space.free();
 	}
 
+	/**
+	 * Gets the amount of ParkingSpaces contained within this ParkingLot
+	 * @return The amount of parking spaces.
+	 */
 	public int getSize() {
 		return spaces.size();
 	}
 
+	/**
+	 * Gets the amount of ParkingSpaces that are occupied within this ParkingLot
+	 * @return The amount of occupied spaces.
+	 */
 	public int getAmountOfOccupants() {
 		return spaces.size() - freeSpaces.size();
 	}
 
+	/**
+	 * Gets the amount of empty ParkingSpaces in this ParkingLot.
+	 * @return The amount of free spaces.
+	 */
 	public int getAmountOfFreeSpaces() {
 		return freeSpaces.size();
 	}
 
+	/**
+	 * The amount of rows in this ParkingSpace.
+	 * @return The amount of rows.
+	 */
 	public int getRows() {
 		return rows;
 	}
 
-	public void setRows(int rows) {
-		this.rows = rows;
+	/**
+	 * Sets the amount of rows. The amount of spaces must be divisible by rows. If this is not the case, the value
+	 * will not change.
+	 * @param rows The amount of rows to divide the parking spaces by.
+	 * @return true if successful, false if the amount of spaces is not divisible by rows.
+	 */
+	public boolean setRows(int rows) {
+		if (getSize() % rows == 0) {
+			this.rows = rows;
+			return true;
+		}
+
+		return false;
 	}
 
-	public ArrayList<ParkingSpace> getSpaces() {
+	/**
+	 * Returns all parking spaces in this lot.
+	 * @return A Collection of ParkingSpaces.
+	 */
+	public Collection<ParkingSpace> getSpaces() {
 		return spaces;
 	}
 }

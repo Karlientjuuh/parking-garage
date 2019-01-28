@@ -16,10 +16,12 @@ import nl.cityparking.garfield.simulator.Simulator;
 import nl.cityparking.garfield.simulator.SimulatorService;
 import nl.cityparking.garfield.simulator.SimulatorState;
 import nl.cityparking.garfield.simulator.config.Configuration;
+import nl.cityparking.garfield.simulator.parking.ParkingFloor;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import java.net.URL;
+import java.util.List;
 
 public class ParkingGarage extends Application {
 	private Simulator simulator;
@@ -78,7 +80,7 @@ public class ParkingGarage extends Application {
 				FXMLLoader loader = this.createLoader("/views/garageView.fxml");
 				Pane view = loader.load();
 				garageView = loader.getController();
-				garageView.setFloors(simulator.getParkingManager().getFloors());
+				garageView.setFloors((List<ParkingFloor>) simulator.getParkingManager().getFloors());
 
 				this.primaryViewController.addMainViewTab(view, "Garage");
 			} catch (Exception e) {

@@ -11,15 +11,16 @@ import nl.cityparking.garfield.simulator.parking.ParkingLot;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GarageView {
 	@FXML
 	private GridPane floorGrid;
 
-	private ArrayList<ParkingFloor> floors = null;
+	private List<ParkingFloor> floors = null;
 	private ArrayList<ParkingLotController> controllers = new ArrayList<>();
 
-	public void setFloors(ArrayList<ParkingFloor> floors) {
+	public void setFloors(List<ParkingFloor> floors) {
 		this.floors = floors;
 
 		// Make sure our grid is empty first!
