@@ -8,18 +8,30 @@ import java.util.Collections;
 /**
  * Employment contains data about which days the agent works, which aids in
  * deciding when they arrive at the garage and when they leave.
+ *
+ * @author Jesse
+ * @since 1.0
  */
 public class Employment {
-	private ArrayList<WorkingHours> workingHours = new ArrayList<>();
+	private ArrayList<ScheduleEntry> schedule = new ArrayList<>();
 
-	public void addWorkingHours(WorkingHours hours) {
+	/**
+	 * Adds an entry to the work schedule of this Employment.
+	 * @param hours The ScheduleEntry to be added to the schedule.
+	 */
+	public void addWorkingHours(ScheduleEntry hours) {
 		// TODO: Check if they overlap
-		workingHours.add(hours);
-		Collections.sort(workingHours);
+		schedule.add(hours);
+		Collections.sort(schedule);
 	}
 
+	/**
+	 * Returns whether or not the hour of the week is a working hour.
+	 * @param hourOfWeek The current hour of the week.
+	 * @return True if working, false if not working.
+	 */
 	public boolean isWorking(long hourOfWeek) {
-		for (WorkingHours hours : workingHours) {
+		for (ScheduleEntry hours : schedule) {
 			if (hourOfWeek >= hours.startHour && hourOfWeek < hours.endHour) {
 				return true;
 			}
@@ -28,8 +40,14 @@ public class Employment {
 		return false;
 	}
 
+	/**
+	 * Calculates if there's a working hour between the begin and end hour.
+	 * @param begin A hour of the week (value between 0 and 167)
+	 * @param end A hour of the week (value between 0 and 167)
+	 * @return True if there's an entry in the schedule between the given hours, false if not.
+	 */
 	public boolean worksBetween(long begin, long end) {
-		for (WorkingHours h: workingHours) {
+		for (ScheduleEntry h: schedule) {
 			if (h.startHour >= begin && h.startHour <= end) {
 				return true;
 			}
@@ -38,8 +56,13 @@ public class Employment {
 		return false;
 	}
 
-	public WorkingHours getNextWorkHour(long currentHour) {
-		for (WorkingHours h: workingHours) {
+	/**
+	 * Returns the next hour in the employment schedule given on the current hour.
+	 * @param currentHour The current hour of the week.
+	 * @return The next hour of week on which a work schedule starts.
+	 */
+	public ScheduleEntry getNextWorkHour(long currentHour) {
+		for (ScheduleEntry h: schedule) {
 			if (h.startHour >= currentHour) {
 				return h;
 			}
@@ -48,15 +71,27 @@ public class Employment {
 		return null;
 	}
 
-	public final ArrayList<WorkingHours> getWorkingHours() {
-		return workingHours;
+	public final ArrayList<ScheduleEntry> getSchedule() {
+		return schedule;
 	}
 
-	public static class WorkingHours implements Comparable<WorkingHours> {
+	/**
+	 * ScheduleEntry shows an entry in the Employment's schedule, showing when an Agent has to work or not.
+	 *
+	 * @author Jesse
+	 * @since 1.0
+	 */
+	public static class ScheduleEntry implements Comparable<ScheduleEntry> {
 		private long startHour = 0;
 		private long endHour = 0;
 
-		public WorkingHours(long startHour, long endHour) {
+		/**
+		 * Creates a new ScheduleEntry. If the starting hour is greater than the ending hour, this function
+		 * will fail dramatically.
+		 * @param startHour The starting hour of the week.
+		 * @param endHour The ending hour of the week.
+		 */
+		public ScheduleEntry(long startHour, long endHour) {
 			startHour = limit(startHour);
 			endHour = limit(endHour);
 			assert (startHour < endHour);
@@ -65,26 +100,33 @@ public class Employment {
 			this.endHour = endHour;
 		}
 
+		/**
+		 * Clamps a value so that it becomes a hour of the week between 0 and 167.
+		 * @param hour A hour.
+		 * @return The hour as a hour of the week (0 to 167)
+		 */
 		public static long limit(long hour) {
-			if (hour < 0) {
-				return 0;
-			} else if (hour > 167) {
-				return 167;
-			}
-
-			return hour;
+			return hour % (24 * 7);
 		}
 
+		/**
+		 * Gets the starting hour of this entry.
+		 * @return The hour of the week upon which this entry starts.
+		 */
 		public long getStartHour() {
 			return startHour;
 		}
 
+		/**
+		 * Gets the ending hour of this entry.
+		 * @return The hour of the week upon which this entry ends.
+		 */
 		public long getEndHour() {
 			return endHour;
 		}
 
 		@Override
-		public int compareTo(@NotNull Employment.WorkingHours o) {
+		public int compareTo(@NotNull Employment.ScheduleEntry o) {
 			return Long.compare(endHour, o.startHour);
 		}
 	}

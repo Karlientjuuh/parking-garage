@@ -2,6 +2,12 @@ package nl.cityparking.garfield.simulator.agent;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Generates Agents for use in the simulation.
+ *
+ * @author Jesse
+ * @since 1.0
+ */
 public class AgentGenerator {
 	public final static String[] MALE_FIRST_NAMES = {
 			"Ulysses", "Gavin", "Malcom", "Mitchel", "Dennis", "Felton", "Mohammed", "Hector", "Jeromy", "Theodore",
@@ -42,6 +48,10 @@ public class AgentGenerator {
 			"Huang"
 	};
 
+	/**
+	 * Generates an Agent.
+	 * @return The generated Agent.
+	 */
 	public Agent generate() {
 		String firstName = (ThreadLocalRandom.current().nextBoolean())
 				? FEMALE_FIRST_NAMES[ThreadLocalRandom.current().nextInt(0, FEMALE_FIRST_NAMES.length)]
@@ -54,7 +64,7 @@ public class AgentGenerator {
 		Employment employment = new Employment();
 
 		for (int i = 5; i >= 0; i--) {
-			employment.addWorkingHours(new Employment.WorkingHours(
+			employment.addWorkingHours(new Employment.ScheduleEntry(
 					ThreadLocalRandom.current().nextInt(7, 13) + i*24,
 					ThreadLocalRandom.current().nextInt(17, 21) + i*24));
 		}

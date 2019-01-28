@@ -37,9 +37,9 @@ public class ArrivalManager {
 				Employment employment = agent.getEmployment();
 
 				// For each work day, we want to add an arrival.
-				for (Employment.WorkingHours workingHours : employment.getWorkingHours()) {
-					long adjustedArrivalMinute = workingHours.getStartHour() * 60 - ThreadLocalRandom.current().nextLong(60);
-					long adjustedDepartureMinute = workingHours.getEndHour() * 60 - ThreadLocalRandom.current().nextLong(30);
+				for (Employment.ScheduleEntry scheduleEntry : employment.getSchedule()) {
+					long adjustedArrivalMinute = scheduleEntry.getStartHour() * 60 - ThreadLocalRandom.current().nextLong(60);
+					long adjustedDepartureMinute = scheduleEntry.getEndHour() * 60 - ThreadLocalRandom.current().nextLong(30);
 					arrivals.add(new Arrival(adjustedArrivalMinute + startOfWeek, adjustedDepartureMinute + startOfWeek, agent));
 				}
 			}
