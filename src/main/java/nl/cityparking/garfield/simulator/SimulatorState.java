@@ -2,11 +2,15 @@ package nl.cityparking.garfield.simulator;
 
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import nl.cityparking.garfield.simulator.economy.Report;
 
 public class SimulatorState {
 	private LongProperty simulatorMinutes = new SimpleLongProperty();
 	private LongProperty carsTotalIn = new SimpleLongProperty();
 	private LongProperty carsTotalOut = new SimpleLongProperty();
+	private ObservableList<Report> reports = FXCollections.observableArrayList();
 
 	public long getSimulatorMinutes() {
 		return simulatorMinutes.get();
@@ -42,5 +46,9 @@ public class SimulatorState {
 
 	public void setCarsTotalOut(long carsTotalOut) {
 		this.carsTotalOut.set(carsTotalOut);
+	}
+
+	public ObservableList<Report> getReports() {
+		return reports;
 	}
 }

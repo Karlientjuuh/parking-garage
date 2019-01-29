@@ -90,12 +90,12 @@ public class ParkingManager {
 	 * @param currentTime The current time in simulator minutes.
 	 * @return A collection of Agents that have left their parking spaces.
 	 */
-	public Collection<Agent> getLeavingAgents(long currentTime) {
+	public Collection<Departure> getLeavingAgents(long currentTime) {
 		if (useThreading) {
 			return pool.invoke(new FindLeaversTask(floors, currentTime));
 		}
 
-		ArrayList<Agent> leavingAgents = new ArrayList<>();
+		ArrayList<Departure> leavingAgents = new ArrayList<>();
 
 		for (ParkingFloor floor: floors) {
 			for (ParkingLot lot: floor.getParkingLots()) {
@@ -140,7 +140,7 @@ public class ParkingManager {
 	 * @since 1.0
 	 * @see WorkerTask
 	 */
-	private static class FindLeaversTask extends RecursiveTask<Collection<Agent>> {
+	private static class FindLeaversTask extends RecursiveTask<Collection<Departure>> {
 		private Collection<ParkingFloor> floors;
 		private long currentTime;
 
@@ -159,7 +159,7 @@ public class ParkingManager {
 		 * @return
 		 */
 		@Override
-		protected Collection<Agent> compute() {
+		protected Collection<Departure> compute() {
 			ArrayList<WorkerTask> workerTasks = new ArrayList<>();
 
 			// Create a task for each lot!
@@ -186,7 +186,7 @@ public class ParkingManager {
 		 * @author Jesse
 		 * @since 1.0
 		 */
-		private static class WorkerTask extends RecursiveTask<Collection<Agent>> {
+		private static class WorkerTask extends RecursiveTask<Collection<Departure>> {
 			private ParkingLot parkingLot;
 			private long currentTime;
 
@@ -206,7 +206,7 @@ public class ParkingManager {
 			 * @return Collection of departing Agents.
 			 */
 			@Override
-			protected List<Agent> compute() {
+			protected List<Departure> compute() {
 				return parkingLot.getSpaces().stream()
 						.filter(ParkingSpace::isOccupied)
 						.filter(s -> s.getOccupiedUntil() <= currentTime)

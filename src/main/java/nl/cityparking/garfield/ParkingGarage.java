@@ -93,6 +93,7 @@ public class ParkingGarage extends Application {
 				Pane view = loader.load();
 				economicViewController = loader.getController();
 				this.primaryViewController.addMainViewTab(view, "Economy");
+				economicViewController.setData(state.getReports());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -115,16 +116,11 @@ public class ParkingGarage extends Application {
 	}
 
 	private void updateSimulatorState(WorkerStateEvent workerStateEvent) {
-		SimulatorState newState = (SimulatorState) workerStateEvent.getSource().getValue();
-		state.setSimulatorMinutes(newState.getSimulatorMinutes());
-		state.setCarsTotalIn(newState.getCarsTotalIn());
-		state.setCarsTotalOut(newState.getCarsTotalOut());
-
+		state.getReports().addAll(simulator.getEconomyManager().getEconomy().getNewReports());
+		state.setSimulatorMinutes(simulator.getSimulationTime().getMinutesPassed());
+		state.setCarsTotalIn(simulator.getCarsIn());
+		state.setCarsTotalOut(simulator.getCarsOut());
 		garageView.update();
-
-		economicViewController.setMinutes(newState.getSimulatorMinutes());
-		economicViewController.setCarsIn(newState.getCarsTotalIn());
-		economicViewController.setCarsOut(newState.getCarsTotalOut());
 	}
 
 	@Override

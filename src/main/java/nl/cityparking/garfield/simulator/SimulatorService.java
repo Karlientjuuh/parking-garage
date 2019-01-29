@@ -2,6 +2,9 @@ package nl.cityparking.garfield.simulator;
 
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import nl.cityparking.garfield.simulator.economy.Report;
+
+import java.util.Collection;
 
 /**
  * SimulatorService is a scheduled service that can be run on the JavaFX
@@ -11,7 +14,7 @@ import javafx.concurrent.Task;
  * @author Jesse
  * @version 1.0
  */
-public class SimulatorService extends ScheduledService<SimulatorState> {
+public class SimulatorService extends ScheduledService<Long> {
 	private Simulator simulator;
 
 	public SimulatorService(Simulator simulator) {
@@ -19,15 +22,11 @@ public class SimulatorService extends ScheduledService<SimulatorState> {
 	}
 
 	@Override
-	protected Task<SimulatorState> createTask() {
+	protected Task<Long> createTask() {
 		return new Task<>() {
 			@Override
-			protected SimulatorState call() throws Exception {
-				SimulatorState state = new SimulatorState();
-				state.setSimulatorMinutes(simulator.getSimulationTime().getMinutesPassed());
-				state.setCarsTotalIn(simulator.getCarsIn());
-				state.setCarsTotalOut(simulator.getCarsOut());
-				return state;
+			protected Long call() throws Exception {
+				return simulator.getSimulationTime().getMinutesPassed();
 			}
 		};
 	}

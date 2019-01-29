@@ -10,6 +10,7 @@ import nl.cityparking.garfield.simulator.agent.Agent;
  */
 public class ParkingSpace {
 	private Agent occupant = null;
+	private long occupiedOn = -1;
 	private long occupiedUntil = -1;
 	private ParkingSpaceType spaceType = ParkingSpaceType.OPEN;
 
@@ -26,9 +27,11 @@ public class ParkingSpace {
 	 * Sets the occupant of this ParkingSpace.
 	 *
 	 * @param agent The Agent to put on this spot.
+	 * @param arrivedOn The simulation minute on which the Agent arrived.
 	 * @param until Set until how long the ParkingSpace is reserved for this occupant.
 	 */
-	public void setOccupant(Agent agent, long until) {
+	public void setOccupant(Agent agent, long arrivedOn, long until) {
+		this.occupiedOn = arrivedOn;
 		this.occupiedUntil = until;
 		this.occupant = agent;
 	}
@@ -39,6 +42,7 @@ public class ParkingSpace {
 	 */
 	public Agent free() {
 		Agent formerOccupant = this.occupant;
+		this.occupiedOn = -1;
 		this.occupiedUntil = -1;
 		this.occupant = null;
 		return formerOccupant;
@@ -69,5 +73,9 @@ public class ParkingSpace {
 	 */
 	public ParkingSpaceType getSpaceType() {
 		return spaceType;
+	}
+
+	public long getOccupiedOn() {
+		return occupiedOn;
 	}
 }

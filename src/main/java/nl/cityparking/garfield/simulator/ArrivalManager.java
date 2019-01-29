@@ -6,6 +6,7 @@ import nl.cityparking.garfield.simulator.agent.Employment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -31,10 +32,12 @@ public class ArrivalManager {
 		arrivals = new ArrayList<>();
 		index = 0;
 		nextArrival = 0;
+		int[] randomarray = {1, 2, 3, 4, 5, 6};
 
 		for (Agent agent: agents) {
 			if (agent.isEmployed()) {
 				Employment employment = agent.getEmployment();
+				agent.updateWealth();
 
 				// For each work day, we want to add an arrival.
 				for (Employment.ScheduleEntry scheduleEntry : employment.getSchedule()) {

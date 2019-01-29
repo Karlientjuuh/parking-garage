@@ -21,6 +21,7 @@ public class Agent {
 	private final String firstName;
 	private final String lastName;
 	private Employment employment = null;
+	private long wealth = 500; //every agent starts off with this amount of money
 
 	/**
 	 * Initializes a new Agent
@@ -78,5 +79,30 @@ public class Agent {
 	 */
 	public boolean isEmployed() {
 		return employment != null;
+	}
+
+
+	/**
+	 * method to get the agent's wealth
+	 * @return long type containing the agent's wealth
+	 */
+	public long getWealth() { return wealth; }
+
+	/**
+	 * method to set the agent's wealth
+	 *
+	 * @param newWealth, the new amount of wealth to be set for the agent.
+	 *
+	 */
+
+	public void setWealth(long newWealth) { wealth = newWealth; }
+
+	/**
+	 * updates the agent's wealth
+	 *
+	 * this method is weekly invoked by the arrivalmanager to give the agents their income
+	 */
+	public void updateWealth () {
+		wealth += 1000;
 	}
 }

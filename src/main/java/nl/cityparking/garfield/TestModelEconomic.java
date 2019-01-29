@@ -7,9 +7,14 @@ import java.time.LocalDate;
 public class TestModelEconomic {
 	private LongProperty income = new SimpleLongProperty();
 	private LongProperty expense = new SimpleLongProperty();
+	private LocalDate date;
+
+	public TestModelEconomic(LocalDate date){
+		this.date = date;
+	}
 
 	public LocalDate getDate(){
-		return LocalDate.now();
+		return date;
 	}
 
 	public  long getTotal() {
@@ -39,4 +44,6 @@ public class TestModelEconomic {
 	public void setExpense(long expense) {
 		this.expense.set(expense);
 	}
+
+
 }

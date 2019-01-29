@@ -1,6 +1,7 @@
 package nl.cityparking.garfield.simulator.parking;
 
 import nl.cityparking.garfield.simulator.Arrival;
+import nl.cityparking.garfield.simulator.Departure;
 import nl.cityparking.garfield.simulator.agent.Agent;
 
 import java.util.ArrayList;
@@ -100,18 +101,22 @@ public class ParkingLot {
 	 */
 	public synchronized void parkArrival(Arrival arrival) {
 		int index = popFirstFreeSpaceIndex();
-		spaces.get(index).setOccupant(arrival.agent, arrival.departureMinute);
+		spaces.get(index).setOccupant(arrival.agent, arrival.arrivalMinute, arrival.departureMinute);
 	}
 
 	/**
 	 * Frees the given space, registering it as available for parking.
 	 * @param space The ParkingSpace to free up.
-	 * @return The Agent that occupied the ParkingSpace.
+	 * @return The Agent as a Departure.
 	 */
-	public synchronized Agent freeSpace(ParkingSpace space) {
+	public synchronized Departure freeSpace(ParkingSpace space) {
 		int index = spaces.indexOf(space);
 		freeSpaces.add(index);
-		return space.free();
+
+		Departure departure = new Departure(space.getOccupant(), space.getOccupiedUntil() - space.getOccupiedOn(), 0);
+		space.free();
+
+		return departure;
 	}
 
 	/**

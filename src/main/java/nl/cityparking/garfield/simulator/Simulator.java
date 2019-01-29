@@ -3,9 +3,10 @@ package nl.cityparking.garfield.simulator;
 import nl.cityparking.garfield.simulator.agent.Agent;
 import nl.cityparking.garfield.simulator.config.Configuration;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Simulator is an abstraction of a parking garage. It's the primary controller of all the happenings in the simulator
@@ -23,6 +24,7 @@ public class Simulator implements Runnable {
     private AgentManager agentManager = new AgentManager();
     private ArrivalManager arrivalManager = new ArrivalManager();
     private ParkingManager parkingManager = new ParkingManager();
+    private EconomyManager economyManager = new EconomyManager();
 
     private boolean stopping = false;
     private long carsIn = 0;
@@ -33,18 +35,18 @@ public class Simulator implements Runnable {
 	 * @param configuration Configuration object with settings to be used by the simulator runtime.
 	 */
 	public Simulator(Configuration configuration) {
-	    conf = configuration;
+		conf = configuration;
 
-    	simulationTime = new SimulatorTime(1);
-	    simulationTime.setOnTick(this::onTick);
-	    simulationTime.setOnMinutePassed(this::onMinutePassed);
-	    simulationTime.setOnHourPassed(this::onHourPassed);
-	    simulationTime.setOnDayPassed(this::onDayPassed);
-	    simulationTime.setOnWeekPassed(this::onWeekPassed);
+		simulationTime = new SimulatorTime(1);
+		simulationTime.setOnTick(this::onTick);
+		simulationTime.setOnMinutePassed(this::onMinutePassed);
+		simulationTime.setOnHourPassed(this::onHourPassed);
+		simulationTime.setOnDayPassed(this::onDayPassed);
+		simulationTime.setOnWeekPassed(this::onWeekPassed);
 
 		// TODO: Allow the layout of the garage to be configured.
-	    parkingManager.addFloors(3, 5, 40);
-    }
+		parkingManager.addFloors(3, 5, 40);
+	}
 
 	/**
 	 * Starts the simulation. This method blocks until stop is called.
@@ -67,16 +69,18 @@ public class Simulator implements Runnable {
     private void onTick() {
     }
 
+
     private void onMinutePassed() {
     	// Phase one, get leavers:
-	    Collection<Agent> result = parkingManager.getLeavingAgents(simulationTime.getMinutesPassed());
-	    carsOut += result.size();
+	    Collection<Departure> departures = parkingManager.getLeavingAgents(simulationTime.getMinutesPassed());
+	    economyManager.processPayments(departures);
+	    carsOut += departures.size();
 
 	    // Phase two, get arrivals:
     	Collection<Arrival> arrivals = arrivalManager.getArrivals(simulationTime.getMinutesPassed());
     	for (Arrival arrival: arrivals) {
     		if (parkingManager.handleArrival(arrival)) {
-			    carsIn++;
+    			carsIn++;
 		    }
 	    }
     }
@@ -85,10 +89,12 @@ public class Simulator implements Runnable {
 	}
 
 	private void onDayPassed() {
+		economyManager.getEconomy().finalizeReport(simulationTime.getMinutesPassed());
     }
 
     private void onWeekPassed() {
     	arrivalManager.generate(agentManager.getCommuters(), simulationTime.getMinutesPassed());
+
     }
 
 	public SimulatorTime getSimulationTime() {
@@ -105,5 +111,9 @@ public class Simulator implements Runnable {
 
 	public ParkingManager getParkingManager() {
     	return parkingManager;
+	}
+
+	public EconomyManager getEconomyManager() {
+		return economyManager;
 	}
 }
